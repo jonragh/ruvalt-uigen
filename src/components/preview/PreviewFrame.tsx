@@ -10,6 +10,7 @@ import { AlertCircle } from "lucide-react";
 
 export function PreviewFrame() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const blobUrlsRef = useRef<string[]>([]);
   const { getAllFiles, refreshTrigger } = useFileSystem();
   const [error, setError] = useState<string | null>(null);
   const [entryPoint, setEntryPoint] = useState<string>("/App.jsx");
@@ -74,7 +75,9 @@ export function PreviewFrame() {
           return;
         }
 
-        const { importMap, styles, errors } = createImportMap(files);
+        blobUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+        const { importMap, styles, errors, blobUrls } = createImportMap(files);
+        blobUrlsRef.current = blobUrls;
         const previewHTML = createPreviewHTML(foundEntryPoint, importMap, styles, errors);
 
         if (iframeRef.current) {

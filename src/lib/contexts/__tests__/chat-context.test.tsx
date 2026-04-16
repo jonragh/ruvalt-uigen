@@ -3,7 +3,6 @@ import { render, screen, waitFor, act, cleanup } from "@testing-library/react";
 import { ChatProvider, useChat } from "../chat-context";
 import { useFileSystem } from "../file-system-context";
 import { useChat as useAIChat } from "@ai-sdk/react";
-import * as anonTracker from "@/lib/anon-work-tracker";
 
 // Mock dependencies
 vi.mock("../file-system-context", () => ({
@@ -12,10 +11,6 @@ vi.mock("../file-system-context", () => ({
 
 vi.mock("@ai-sdk/react", () => ({
   useChat: vi.fn(),
-}));
-
-vi.mock("@/lib/anon-work-tracker", () => ({
-  setHasAnonWork: vi.fn(),
 }));
 
 // Helper component to access chat context
@@ -107,47 +102,6 @@ describe("ChatContext", () => {
     });
 
     expect(screen.getByTestId("messages").textContent).toBe("2");
-  });
-
-  test("tracks anonymous work when no project ID", async () => {
-    const mockMessages = [{ id: "1", role: "user", content: "Hello" }];
-
-    (useAIChat as any).mockReturnValue({
-      ...mockUseAIChat,
-      messages: mockMessages,
-    });
-
-    render(
-      <ChatProvider>
-        <TestComponent />
-      </ChatProvider>
-    );
-
-    await waitFor(() => {
-      expect(anonTracker.setHasAnonWork).toHaveBeenCalledWith(
-        mockMessages,
-        mockFileSystem.serialize()
-      );
-    });
-  });
-
-  test("does not track anonymous work when project ID exists", async () => {
-    const mockMessages = [{ id: "1", role: "user", content: "Hello" }];
-
-    (useAIChat as any).mockReturnValue({
-      ...mockUseAIChat,
-      messages: mockMessages,
-    });
-
-    render(
-      <ChatProvider projectId="test-project">
-        <TestComponent />
-      </ChatProvider>
-    );
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    expect(anonTracker.setHasAnonWork).not.toHaveBeenCalled();
   });
 
   test("passes through AI chat functionality", () => {

@@ -4,12 +4,10 @@ import {
   createContext,
   useContext,
   ReactNode,
-  useEffect,
 } from "react";
 import { useChat as useAIChat } from "@ai-sdk/react";
 import { Message } from "ai";
 import { useFileSystem } from "./file-system-context";
-import { setHasAnonWork } from "@/lib/anon-work-tracker";
 
 interface ChatContextProps {
   projectId?: string;
@@ -50,13 +48,6 @@ export function ChatProvider({
       handleToolCall(toolCall);
     },
   });
-
-  // Track anonymous work
-  useEffect(() => {
-    if (!projectId && messages.length > 0) {
-      setHasAnonWork(messages, fileSystem.serialize());
-    }
-  }, [messages, fileSystem, projectId]);
 
   return (
     <ChatContext.Provider
